@@ -17,23 +17,15 @@ Usage
 Install
 -------
 
-- `git clone` this repository somewhere on your disk (for example: `git clone git@github.com:marcinant/git-flow-hooks.git ~/.config/git/git-flow-hooks/`)
-- Run `git init --template=<directory-with-git-flow-hooks-clone>` in your repository. (`git init --template=~/.config/git/git-flow-hooks/`)
-- Optionally copy `.git/hooks/modules/git-flow-hooks-config.sh.dist` to `.git/git-flow-hooks-config.sh` and set values according to your wishes.
+On Ubuntu 15.x
+
+- `apt-get update && apt-get install -y git-flow`
+- Clone this repository to git config dir: `git clone git@github.com:marcinant/git-flow-hooks.git ~/.config/git/git-flow-hooks/`
 
 Use as global template
 ----------------------
 
-- `git config --global init.templatedir '<directory-with-git-flow-hooks-clone>'`
-or `git config --global init.templatedir $(pwd)` if issued from directory where you cloned this repo.
-
-### OS X
-
-OS X doesn't support `sort -V`, which is used to sort git tags by version number, which in turn is needed to correctly bump versions.
-
-On OS X you can install [coreutils][6] (using [MacPorts][7] or [Homebrew][8]), after which `gsort -V` can be used. If it's located at `/opt/local/bin/gsort` or `/usr/local/bin/gsort` we will pick it up automatically. Otherwise we fall back to `/usr/bin/sort`.
-
-Optionally you can use the configuration option `VERSION_SORT` to point to a different command.
+- `$(cd ~/.config/git/git-flow-hooks && git config --global init.templatedir $(pwd))`.
 
 Update
 ------
