@@ -6,7 +6,7 @@ Some useful hooks for [git-flow (AVH Edition)][1].
 What does it do?
 ================
 
-- Prevent direct commits to the master branch.
+- Prevent direct commits to the master branch (on repositories with `gitflow` initialized).
 - Prevent merge marker commits.
 - Automatically bump versions when starting a release or hotfix. Versions are generated, written to file and committed.
 - Automatically specify tag messages.
@@ -17,9 +17,15 @@ Usage
 Install
 -------
 
-- `git clone` this repository somewhere on your disk.
-- Run `git init --template=<directory-with-git-flow-hooks-clone>` in your repository.
+- `git clone` this repository somewhere on your disk (for example: `git clone git@github.com:marcinant/git-flow-hooks.git ~/.config/git/git-flow-hooks/`)
+- Run `git init --template=<directory-with-git-flow-hooks-clone>` in your repository. (`git init --template=~/.config/git/git-flow-hooks/`)
 - Optionally copy `.git/hooks/modules/git-flow-hooks-config.sh.dist` to `.git/git-flow-hooks-config.sh` and set values according to your wishes.
+
+Use as global template
+----------------------
+
+- `git config --global init.templatedir '<directory-with-git-flow-hooks-clone>'`
+or `git config --global init.templatedir $(pwd)` if issued from directory where you cloned this repo.
 
 ### OS X
 
@@ -32,9 +38,8 @@ Optionally you can use the configuration option `VERSION_SORT` to point to a dif
 Update
 ------
 
-- Run `git pull` in the git-flow-hooks directory.
+- Run `git init` in your repository.
 
-That's it, all your repositories that have symlinked git-flow-hooks will use the latest version.
 
 Configuration
 -------------
