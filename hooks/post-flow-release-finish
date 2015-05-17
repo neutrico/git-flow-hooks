@@ -1,0 +1,29 @@
+#!/bin/bash -xv
+
+VERSION=$1
+ROOTDIR=$(git rev-parse --show-toplevel)
+
+echo "POST Flow release finish version: $VERSION $2 $3 $4"
+
+FILE=composer.json
+
+if [ -f $FILE ]; then
+
+    TYPE=$(jq -r '.type' $FILE)
+    NAME=$(jq -r '.name' $FILE)
+    SLUG=$(basename  $NAME)
+
+    if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
+
+	TMPDIR=$(mktemp -d)
+	mkdir -p $TMPDIR/$SLUG
+
+	cp -rf . $TMPDIR/$SLUG/
+
+	composer install --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
+
+	( cd $TMPDIR && zip -9qr $ROOTDIR/$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\*.project.org$ $SLUG\*composer.* $SLUG\.project.org )
+
+    fi
+
+fi
