@@ -11,6 +11,10 @@ What does it do?
 - Automatically bump versions when starting a release or hotfix. Versions are generated, written to file and committed.
 - Automatically specify tag messages.
 
+- Bump project version. Supports: Bower, Composer, NPM, WordPress Themes, Wordpress Plugins.
+- Create WP Theme or WP Plugin zip package on post release finish hook.
+
+
 Usage
 =====
 
