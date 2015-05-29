@@ -22,7 +22,7 @@ if [ -f $FILE ]; then
 
 	composer install --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
 
-	( cd $TMPDIR && zip -9qr $ROOTDIR/$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\*.project.org$ $SLUG\*composer.* $SLUG\.project.org )
+	( cd $TMPDIR && zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\*.project.org$ $SLUG\*composer.* $SLUG\.project.org )
 
     fi
 
