@@ -24,16 +24,12 @@ if [ -f composer.json ]; then
     if [ $TYPE == "wordpress-theme" ]; then
 	echo "WordPress Theme version bump: $VERSION"
 
-	(
-	    cd assets/styles
-	    if [ -f style.scss ]; then
-		sass --sourcemap=none \
-		     --load-path="../../vendor/twbs/bootstrap-sass/assets/stylesheets" \
-		     --style=compressed \
-		     --scss \
-		     'style.scss' '../../style.css'
-	    fi
-	)
+	if [ -f assets/styles/style.scss ]; then
+	    sass --sourcemap=none \
+		 --load-path="vendor/twbs/bootstrap-sass/assets/stylesheets" \
+		 --style=compressed \
+		 'assets/styles/style.scss' 'style.css'
+	fi
 
 	sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/style.css
     fi
