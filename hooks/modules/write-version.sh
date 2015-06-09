@@ -14,8 +14,6 @@ echo -n "$VERSION" > $VERSION_FILE && \
 
 if [ -f composer.json ]; then
 
-    composer update
-
     TEMPFILE=$(tempfile)
 
     echo "Composer.json exists. Version bump to $VERSION."
@@ -29,11 +27,11 @@ if [ -f composer.json ]; then
 	(
 	    cd assets/styles
 	    if [ -f style.scss ]; then
-		echo "STYLE FOUND"
 		sass --sourcemap=none \
 		     --load-path="../../vendor/twbs/bootstrap-sass/assets/stylesheets" \
 		     --style=compressed \
-		     --update '../../'
+		     --scss \
+		     'style.scss' '../../style.css'
 	    fi
 	)
 

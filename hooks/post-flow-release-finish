@@ -11,7 +11,7 @@ if [ -f $FILE ]; then
 
     TYPE=$(jq -r '.type' $FILE)
     NAME=$(jq -r '.name' $FILE)
-    SLUG=$(basename  $NAME)
+    SLUG=$(basename $NAME)
 
     if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
 
@@ -20,9 +20,14 @@ if [ -f $FILE ]; then
 
 	cp -rf . $TMPDIR/$SLUG/
 
+	rm -rf $TMPDIR/$SLUG/vendor
+
 	composer install --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
 
-	( cd $TMPDIR && zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\.*$ $SLUG\*composer.* $SLUG\components )
+	(
+	    cd $TMPDIR
+	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\.*$ $SLUG\*composer.* $SLUG\components
+	)
 
     fi
 
