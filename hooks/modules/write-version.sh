@@ -11,7 +11,10 @@ echo -n "$VERSION" > $VERSION_FILE && \
     git add $VERSION_FILE && \
     git commit -m "Bumped version to $VERSION"
 
+
 if [ -f composer.json ]; then
+
+    composer update
 
     TEMPFILE=$(tempfile)
 
@@ -22,6 +25,17 @@ if [ -f composer.json ]; then
 
     if [ $TYPE == "wordpress-theme" ]; then
 	echo "WordPress Theme version bump: $VERSION"
+
+	(
+	    cd assets/styles
+	    if [ -f style.scss ]; then
+		echo "STYLE FOUND"
+		sass --sourcemap=none \
+		     --load-path="../../vendor/twbs/bootstrap-sass/assets/stylesheets" \
+		     --style=compressed \
+		     --update '../../'
+	    fi
+	)
 
 	sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/style.css
     fi
