@@ -15,10 +15,6 @@ if [ -f $FILE ]; then
 
     if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
 
-	# Ensure we got required dependencies
-
-	composer update --no-interaction --quiet
-
 	# Create temporary dir
 
 	TMPDIR=$(mktemp -d)

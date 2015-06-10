@@ -25,6 +25,11 @@ if [ -f composer.json ]; then
     if [ $TYPE == "wordpress-theme" ]; then
 	echo "WordPress Theme version bump: $VERSION"
 
+	# Ensure we got required dependencies
+	# We need to run composer update here because we may need some scss templates for style.css
+
+	composer update --no-interaction --quiet
+
 	# Ensure we got style.css to bump
 
 	if [ -f $ROOTDIR/assets/styles/style.scss ]; then
