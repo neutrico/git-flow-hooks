@@ -15,18 +15,35 @@ if [ -f $FILE ]; then
 
     if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
 
+	# Create temporary dir
+
 	TMPDIR=$(mktemp -d)
 	mkdir -p $TMPDIR/$SLUG
 
+	# Copy working tree to temporary dir
+
 	cp -rf . $TMPDIR/$SLUG/
+
+	# Remove vendor dir
 
 	rm -rf $TMPDIR/$SLUG/vendor
 
+	# Regenerate vendor dir excluding development dependencies
+
 	composer install --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
+
+	# Prepare distribution zip
 
 	(
 	    cd $TMPDIR
-	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\.*$ $SLUG\*composer.* $SLUG\components
+	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
+		-x \
+		$SLUG\*.git*\
+		$SLUG\*.sass-cache*$ \
+		$SLUG\.phpmd.xml \
+		$SLUG\.bowerrc \
+		$SLUG\*composer.* \
+		$SLUG\components
 	)
 
     fi
