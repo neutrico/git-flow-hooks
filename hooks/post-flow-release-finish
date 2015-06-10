@@ -30,7 +30,7 @@ if [ -f $FILE ]; then
 
 	# Regenerate vendor dir excluding development dependencies
 
-	composer install --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
+	composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
 
 	# Prepare distribution zip
 
@@ -38,12 +38,12 @@ if [ -f $FILE ]; then
 	    cd $TMPDIR
 	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
 		-x \
-		$SLUG\*.git*\
-		$SLUG\*.sass-cache*$ \
-		$SLUG\.phpmd.xml \
-		$SLUG\.bowerrc \
-		$SLUG\*composer.* \
-		$SLUG\components
+		$SLUG/*.git*\
+		$SLUG/.sass-cache* \
+		$SLUG/.phpmd.xml \
+		$SLUG/.bowerrc \
+		$SLUG/*composer.* \
+		$SLUG/components
 	)
 
     fi
