@@ -40,8 +40,13 @@ if [ -f $FILE ]; then
 	# Regenerate vendor dir excluding development dependencies and do not run scripts
 	composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --no-scripts --quiet
 
-	# Create distribution zip
+	# Create screenshot.png placeholder
+	#
+	if [ ! -f $ROOTDIR/screenshot.png ]; then
+	    convert -size 880x660 -fill "#ffffff" -background "#0d47a1" -font Roboto -pointsize 112 -gravity center label:$SLUG screenshot.png
+	fi
 
+	# Create distribution zip
 	(
 	    cd $TMPDIR
 	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
