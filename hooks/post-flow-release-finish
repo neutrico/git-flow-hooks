@@ -46,7 +46,8 @@ if [ -f $FILE ]; then
 	    cd $TMPDIR
 	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
 		-x \
-		$SLUG/*composer.*
+		$SLUG/*composer.* \
+		$SLUG/*.git*
 	)
 
     fi

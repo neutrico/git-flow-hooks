@@ -28,7 +28,7 @@ if [ -f composer.json ]; then
 	# Ensure we got required dependencies
 	# We need to run composer update here because we may need some scss templates for style.css
 
-	composer update --no-interaction --quiet
+#	composer update --no-interaction --quiet
 
 	# Ensure we got style.css to bump
 
@@ -40,11 +40,11 @@ if [ -f composer.json ]; then
 		 --load-path="vendor/twbs/bootstrap-sass/assets/stylesheets" \
 		 --style=compressed \
 		 'assets/styles/style.scss' 'style.css'
-
-	    sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/style.css
-
 	fi
 
+	if [ -f $ROOTDIR/style.css ]; then
+	    sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/style.css
+	fi
 
     fi
 
