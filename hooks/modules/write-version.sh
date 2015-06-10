@@ -27,14 +27,20 @@ if [ -f composer.json ]; then
 
 	# Ensure we got style.css to bump
 
-	if [ -f assets/styles/style.scss ]; then
+	if [ -f $ROOTDIR/assets/styles/style.scss ]; then
+
+	    sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/assets/styles/style.scss
+
 	    sass --sourcemap=none \
 		 --load-path="vendor/twbs/bootstrap-sass/assets/stylesheets" \
 		 --style=compressed \
 		 'assets/styles/style.scss' 'style.css'
+
+	    sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/style.css
+
 	fi
 
-	sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/style.css
+
     fi
 
     if [ $TYPE == "wordpress-plugin" ]; then
