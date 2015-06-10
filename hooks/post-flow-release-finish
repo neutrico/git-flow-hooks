@@ -20,30 +20,33 @@ if [ -f $FILE ]; then
 	TMPDIR=$(mktemp -d)
 	mkdir -p $TMPDIR/$SLUG
 
-	# Copy working tree to temporary dir
+	# Rsync working tree to temporary dir
+	rsync -ar \
+	      --quiet \
+	      --delete-excluded \
+	      --include="assets/scripts/vendor" \
+	      --exclude="components" \
+	      --exclude="vendor" \
+	      --exclude="VERSION" \
+	      --exclude=".git" \
+	      --exclude=".sass-cache" \
+	      --exclude=".gitignore" \
+	      --exclude=".phpmd.xml" \
+	      --exclude=".bowerrc" \
+	      --exclude="assets/styles/*.scss" \
+	      --prune-empty-dirs \
+	      . $TMPDIR/$SLUG/
 
-	cp -rf . $TMPDIR/$SLUG/
+	# Regenerate vendor dir excluding development dependencies and do not run scripts
+	composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --no-scripts --quiet
 
-	# Remove vendor dir
-
-	rm -rf $TMPDIR/$SLUG/vendor
-
-	# Regenerate vendor dir excluding development dependencies
-
-	composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
-
-	# Prepare distribution zip
+	# Create distribution zip
 
 	(
 	    cd $TMPDIR
 	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
 		-x \
-		$SLUG/*.git*\
-		$SLUG/.sass-cache* \
-		$SLUG/.phpmd.xml \
-		$SLUG/.bowerrc \
-		$SLUG/*composer.* \
-		$SLUG/components
+		$SLUG/*composer.*
 	)
 
     fi

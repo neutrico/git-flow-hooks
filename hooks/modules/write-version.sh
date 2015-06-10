@@ -16,13 +16,18 @@ if [ -f composer.json ]; then
 
     TEMPFILE=$(tempfile)
 
-    echo "Composer.json exists. Version bump to $VERSION."
+    echo "Composer.json exists. Version bump to $VERSION in $ROOTDIR."
+
     jq "del(.version) + { \"version\": \"$VERSION\" }" composer.json > $TEMPFILE && mv -f $TEMPFILE composer.json
 
     TYPE=$(jq -r '.type' composer.json)
 
     if [ $TYPE == "wordpress-theme" ]; then
 	echo "WordPress Theme version bump: $VERSION"
+
+	# Ensure we got required dependencies
+
+	composer update --no-autoloader --no-interaction
 
 	if [ -f assets/styles/style.scss ]; then
 	    sass --sourcemap=none \

@@ -20,6 +20,8 @@ BASE=$4
 
 # Implement your script here.
 
+ROOTDIR=$(git rev-parse --show-toplevel)
+
 SCRIPT_PATH="$0"; while [ -h "$SCRIPT_PATH" ]; do SCRIPT_PATH=$(readlink "$SCRIPT_PATH"); done
 . "$(dirname $SCRIPT_PATH)/modules/functions.sh"
 
