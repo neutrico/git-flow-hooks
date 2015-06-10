@@ -25,9 +25,7 @@ if [ -f composer.json ]; then
     if [ $TYPE == "wordpress-theme" ]; then
 	echo "WordPress Theme version bump: $VERSION"
 
-	# Ensure we got required dependencies
-
-	composer update --no-autoloader --no-interaction
+	# Ensure we got style.css to bump
 
 	if [ -f assets/styles/style.scss ]; then
 	    sass --sourcemap=none \
