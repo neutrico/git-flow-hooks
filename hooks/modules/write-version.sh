@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -ex
+
 VERSION_FILE=$(__get_version_file)
 VERSION_PREFIX=$(git config --get gitflow.prefix.versiontag)
 
@@ -49,10 +51,14 @@ if [ -f composer.json ]; then
     fi
 
     if [ $TYPE == "wordpress-plugin" ]; then
-	echo "WordPress Plugin version bump: $VERSION"
+
+	echo "WordPress Plugin version bump to: $VERSION"
 
 	find $ROOTDIR -maxdepth 1 -type f -name '*.php' -exec \
 	     sed -i 's/^Version:.*/Version: '$VERSION'/g' {} +
+
+	find $ROOTDIR -maxdepth 1 -type f -name '*.php' -exec \
+	     sed -i 's/\* Version:.*/\* Version: '$VERSION'/g' {} +
 
     fi
 

@@ -13,13 +13,17 @@ if [ -f $FILE ]; then
     NAME=$(jq -r '.name' $FILE)
     SLUG=$(basename $NAME)
 
-    if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
+    if [ "$TYPE" = "wordpress-theme" ]; then
 
 	# Create screenshot.png placeholder
 	#
 	if [ ! -f $ROOTDIR/screenshot.png ]; then
 	    convert -size 880x660 -fill "#ffffff" -background "#0d47a1" -font Roboto -pointsize 56 -gravity center label:$SLUG screenshot.png
 	fi
+
+    fi
+
+    if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
 
 	# Create temporary dir
 
