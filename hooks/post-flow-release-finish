@@ -39,7 +39,7 @@ if [ -f $FILE ]; then
 	      --exclude="vendor" \
 	      --exclude="VERSION" \
 	      --exclude=".git" \
-	      --exclude=".sass-cache" \
+	      --exclude=".sass-cache" \d
 	      --exclude=".gitignore" \
 	      --exclude=".phpmd.xml" \
 	      --exclude=".bowerrc" \

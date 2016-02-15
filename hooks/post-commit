@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# requires: jq, lftp
+
+set +x
+
+echo "------------------------------------------------POST Commit Hook"
+
+FILE=composer.json
+
+LOCAL="./"
+EXCLUDES=""
+
+if [ -f $FILE ]; then
+
+    TYPE=$(jq -r '.type' $FILE)
+    NAME=$(jq -r '.name' $FILE)
+
+    HOST_URL=$(jq -r '.extra.staging.url' $FILE)
+    HOST_TYPE=$(jq -r '.extra.staging.type' $FILE)
+    HOST_USER=$(jq -r '.extra.staging.user' $FILE)
+
+    ARCHIVE_EXCLUDES=$(jq -r '.archive.exclude[]' $FILE)
+    for e in $ARCHIVE_EXCLUDES
+    do
+	echo "exclude: $e"
+	EXCLUDES+=" --exclude $e"
+    done
+
+    if [ "$TYPE" = "wordpress-theme" ]; then
+
+	if [ "$HOST_TYPE" = "ftp" ]; then
+
+	    # Set up FTP URL
+	    FTP_URL="$HOST_TYPE://$HOST_USER@$HOST_URL"
+
+	    REMOTE="wp-content/themes/$NAME/"
+	    # LFTP sets
+	    lftp_sets="set cmd:fail-exit yes;"
+	    if [ "$HOST_TYPE" == "ftp" ]
+	    then
+		lftp_sets+=" set ftp:ssl-allow no;"
+	    fi
+
+	    lftp -e "debug
+	    $lftp_sets
+	    open '$FTP_URL';
+	    lcd $LOCAL;
+	    mkdir -pf $REMOTE;
+	    cd $REMOTE;
+	    mirror --continue --only-newer --verbose=3 --no-perms --parallel=8 $EXCLUDES $LOCAL $REMOTE"
+	fi
+    fi
+fi
