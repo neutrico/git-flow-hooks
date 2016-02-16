@@ -1,4 +1,6 @@
-#!/bin/bash -xv
+#!/bin/bash
+
+#-xv
 
 VERSION=$1
 ROOTDIR=$(git rev-parse --show-toplevel)
@@ -6,24 +8,70 @@ ROOTDIR=$(git rev-parse --show-toplevel)
 echo "POST Flow release finish version: $VERSION $2 $3 $4"
 
 FILE=composer.json
+EXCLUDES=""
+VERBOSE=v
 
 if [ -f $FILE ]; then
 
     TYPE=$(jq -r '.type' $FILE)
     NAME=$(jq -r '.name' $FILE)
-    SLUG=$(basename  $NAME)
+    SLUG=$(basename $NAME)
+
+    ARCHIVE_EXCLUDES=$(jq -r '.archive.exclude[]' $FILE)
+    for e in $ARCHIVE_EXCLUDES
+    do
+	EXCLUDES+=" --exclude $e"
+    done
+
+    if [ "$TYPE" = "wordpress-theme" ]; then
+
+    	# Create screenshot.png placeholder
+    	#
+    	if [ ! -f $ROOTDIR/screenshot.png ]; then
+    	    convert -size 880x660 -fill "#ffffff" -background "#0d47a1" -font Roboto -pointsize 56 -gravity center label:$SLUG screenshot.png
+    	fi
+
+	LOCAL="$(pwd)/wp-content/themes/$SLUG/"
+
+    fi
+
+    if [ "$TYPE" = "wordpress-plugin"]; then
+
+	LOCAL="$(pwd)/wp-content/plugins/$SLUG/"
+
+    fi
 
     if [ "$TYPE" = "wordpress-plugin" ] || [ "$TYPE" = "wordpress-theme" ]; then
+
+	# Create temporary dir
+
+	echo "POST Flow release finish - Prepare zip archive"
 
 	TMPDIR=$(mktemp -d)
 	mkdir -p $TMPDIR/$SLUG
 
-	cp -rf . $TMPDIR/$SLUG/
+	# Rsync working tree to temporary dir
+	rsync -ar$VERBOSE \
+	      --delete-excluded \
+	      $EXCLUDES \
+	      --prune-empty-dirs \
+	      $LOCAL $TMPDIR/$SLUG/
 
-	composer install --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --quiet
+	# Regenerate vendor dir excluding development dependencies and do not run scripts
+	# composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --no-scripts --quiet
 
-	( cd $TMPDIR && zip -9qr $ROOTDIR/$SLUG.$VERSION.zip ./* -x $SLUG\*.git* $SLUG\*.project.org$ $SLUG\*composer.* $SLUG\.project.org )
+	Create distribution zip
+	(
+	    cd $TMPDIR
+	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
+		-x \
+		$SLUG/*.git*
+	)
 
     fi
+
+    # stop server after release
+
+    composer stop
 
 fi

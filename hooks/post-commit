@@ -2,14 +2,7 @@
 
 #set -xv
 
-echo "Git post-checkout hook for git-flow init."
-
-SCRIPT_PATH="$0"; while [ -h "$SCRIPT_PATH" ]; do SCRIPT_PATH=$(readlink "$SCRIPT_PATH"); done
-. "$(dirname $SCRIPT_PATH)/modules/functions.sh"
-
-if ! gitflow_is_initialized; then
-    git flow init --default --force
-fi
+echo "Git post-commit hook for git-flow."
 
 FILE=composer.json
 LOCAL="./"
@@ -35,15 +28,15 @@ if [ -f $FILE ]; then
 
     if [ "$TYPE" = "wordpress-theme" ]; then
 
-	echo "Git post-checkout hook - Ensure we got directory for local theme development."
+	echo "Git post-commit hook - Ensure we got directory for local theme development."
 
 	mkdir -p$VERBOSE ./wp-content/themes/$SLUG
 
-	echo "Git post-checkout hook - Sync theme content to ./wp-content/themes/$SLUG"
+	echo "Git post-commit hook - Sync theme content to ./wp-content/themes/$SLUG"
 
 	rsync -az$VERBOSE $EXCLUDES $LOCAL ./wp-content/themes/$SLUG
 
-	echo "Git post-checkout hook - Run Composer to fetch runtime dependencies"
+	echo "Git post-commit hook - Run Composer to fetch runtime dependencies"
 
 	composer update --no-dev \
 		 --no-plugins \
@@ -51,7 +44,7 @@ if [ -f $FILE ]; then
 		 --optimize-autoloader \
 		 --working-dir=./wp-content/themes/$SLUG
 
-	echo "Git post-checkout hook - Sync theme folder to staging host"
+	echo "Git post-commit hook - Sync theme folder to staging host"
 
 	if [ "$HOST_TYPE" = "ftp" ]; then
 
@@ -67,13 +60,11 @@ if [ -f $FILE ]; then
 		lftp_sets+=" set ftp:ssl-allow no;"
 	    fi
 
-	    # ensure we got target folder on remote host
+	    # ensure we got target dir on FTP host
 
 	    lftp -e "$lftp_sets
 	    open '$FTP_URL';
 	    mkdir -pf $REMOTE;"
-
-	    # sync with remote host via FTP protocol
 
 	    lftp -e "$lftp_sets
 	    open '$FTP_URL';
@@ -87,10 +78,5 @@ if [ -f $FILE ]; then
 	    $EXCLUDES \
 	    --reverse $LOCAL $REMOTE"
 	fi
-
-	echo "Git post-checkout hook - Try to run local WordPress instance."
-
-	composer start
-
     fi
 fi
