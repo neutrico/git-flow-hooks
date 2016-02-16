@@ -1,4 +1,6 @@
-#!/bin/bash -xv
+#!/bin/bash
+
+#-xv
 
 VERSION=$1
 ROOTDIR=$(git rev-parse --show-toplevel)
@@ -6,6 +8,8 @@ ROOTDIR=$(git rev-parse --show-toplevel)
 echo "POST Flow release finish version: $VERSION $2 $3 $4"
 
 FILE=composer.json
+EXCLUDES=""
+VERBOSE=v
 
 if [ -f $FILE ]; then
 
@@ -13,13 +17,27 @@ if [ -f $FILE ]; then
     NAME=$(jq -r '.name' $FILE)
     SLUG=$(basename $NAME)
 
+    ARCHIVE_EXCLUDES=$(jq -r '.archive.exclude[]' $FILE)
+    for e in $ARCHIVE_EXCLUDES
+    do
+	EXCLUDES+=" --exclude $e"
+    done
+
     if [ "$TYPE" = "wordpress-theme" ]; then
 
-	# Create screenshot.png placeholder
-	#
-	if [ ! -f $ROOTDIR/screenshot.png ]; then
-	    convert -size 880x660 -fill "#ffffff" -background "#0d47a1" -font Roboto -pointsize 56 -gravity center label:$SLUG screenshot.png
-	fi
+    	# Create screenshot.png placeholder
+    	#
+    	if [ ! -f $ROOTDIR/screenshot.png ]; then
+    	    convert -size 880x660 -fill "#ffffff" -background "#0d47a1" -font Roboto -pointsize 56 -gravity center label:$SLUG screenshot.png
+    	fi
+
+	LOCAL="$(pwd)/wp-content/themes/$SLUG/"
+
+    fi
+
+    if [ "$TYPE" = "wordpress-plugin"]; then
+
+	LOCAL="$(pwd)/wp-content/plugins/$SLUG/"
 
     fi
 
@@ -27,38 +45,33 @@ if [ -f $FILE ]; then
 
 	# Create temporary dir
 
+	echo "POST Flow release finish - Prepare zip archive"
+
 	TMPDIR=$(mktemp -d)
 	mkdir -p $TMPDIR/$SLUG
 
 	# Rsync working tree to temporary dir
-	rsync -ar \
-	      --quiet \
+	rsync -ar$VERBOSE \
 	      --delete-excluded \
-	      --include="assets/scripts/vendor" \
-	      --exclude="components" \
-	      --exclude="vendor" \
-	      --exclude="VERSION" \
-	      --exclude=".git" \
-	      --exclude=".sass-cache" \d
-	      --exclude=".gitignore" \
-	      --exclude=".phpmd.xml" \
-	      --exclude=".bowerrc" \
-	      --exclude="assets/styles/*.scss" \
+	      $EXCLUDES \
 	      --prune-empty-dirs \
-	      . $TMPDIR/$SLUG/
+	      $LOCAL $TMPDIR/$SLUG/
 
 	# Regenerate vendor dir excluding development dependencies and do not run scripts
-	composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --no-scripts --quiet
+	# composer update --working-dir $TMPDIR/$SLUG --no-interaction --no-dev --optimize-autoloader --no-scripts --quiet
 
-	# Create distribution zip
+	Create distribution zip
 	(
 	    cd $TMPDIR
 	    zip -9qr $ROOTDIR/../$SLUG.$VERSION.zip ./* \
 		-x \
-		$SLUG/*composer.* \
 		$SLUG/*.git*
 	)
 
     fi
+
+    # stop server after release
+
+    composer stop
 
 fi

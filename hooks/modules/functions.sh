@@ -24,7 +24,8 @@ function __get_version_file {
         VERSION_FILE="VERSION"
     fi
 
-    echo "$ROOT_DIR/$VERSION_FILE"
+    #echo "$ROOT_DIR/$VERSION_FILE"
+
 }
 
 function __get_hotfix_version_bumplevel {

@@ -1,4 +1,6 @@
-#!/bin/bash -xv
+#!/bin/bash
+
+#set -xv
 
 echo "Git post-checkout hook for git-flow init."
 
@@ -7,4 +9,88 @@ SCRIPT_PATH="$0"; while [ -h "$SCRIPT_PATH" ]; do SCRIPT_PATH=$(readlink "$SCRIP
 
 if ! gitflow_is_initialized; then
     git flow init --default --force
+fi
+
+FILE=composer.json
+LOCAL="./"
+EXCLUDES=""
+
+VERBOSE=v
+
+if [ -f $FILE ]; then
+
+    TYPE=$(jq -r '.type' $FILE)
+    NAME=$(jq -r '.name' $FILE)
+    SLUG=$(basename $NAME)
+
+    HOST_URL=$(jq -r '.extra.staging.url' $FILE)
+    HOST_TYPE=$(jq -r '.extra.staging.type' $FILE)
+    HOST_USER=$(jq -r '.extra.staging.user' $FILE)
+
+    ARCHIVE_EXCLUDES=$(jq -r '.archive.exclude[]' $FILE)
+    for e in $ARCHIVE_EXCLUDES
+    do
+	EXCLUDES+=" --exclude $e"
+    done
+
+    if [ "$TYPE" = "wordpress-theme" ]; then
+
+	echo "Git post-checkout hook - Ensure we got directory for local theme development."
+
+	mkdir -p$VERBOSE ./wp-content/themes/$SLUG
+
+	echo "Git post-checkout hook - Sync theme content to ./wp-content/themes/$SLUG"
+
+	rsync -az$VERBOSE $EXCLUDES $LOCAL ./wp-content/themes/$SLUG
+
+	echo "Git post-checkout hook - Run Composer to fetch runtime dependencies"
+
+	composer update --no-dev \
+		 --no-plugins \
+		 --no-scripts \
+		 --optimize-autoloader \
+		 --working-dir=./wp-content/themes/$SLUG
+
+	echo "Git post-checkout hook - Sync theme folder to staging host"
+
+	if [ "$HOST_TYPE" = "ftp" ]; then
+
+	    # Set up FTP URL
+	    FTP_URL="$HOST_TYPE://$HOST_USER@$HOST_URL"
+
+	    REMOTE="/wp-content/themes/$SLUG/"
+	    LOCAL="$(pwd)/wp-content/themes/$SLUG/"
+	    # LFTP sets
+	    lftp_sets="set cmd:fail-exit yes;"
+	    if [ "$HOST_TYPE" == "ftp" ]
+	    then
+		lftp_sets+=" set ftp:ssl-allow no;"
+	    fi
+
+	    # ensure we got target folder on remote host
+
+	    lftp -e "$lftp_sets
+	    open '$FTP_URL';
+	    mkdir -pf $REMOTE;"
+
+	    # sync with remote host via FTP protocol
+
+	    lftp -e "$lftp_sets
+	    open '$FTP_URL';
+	    lcd $LOCAL;
+	    cd $REMOTE;
+	    mirror --verbose=0 \
+	    --continue \
+	    --only-newer \
+	    --no-perms \
+	    --parallel=8 \
+	    $EXCLUDES \
+	    --reverse $LOCAL $REMOTE"
+	fi
+
+	echo "Git post-checkout hook - Try to run local WordPress instance."
+
+	composer start
+
+    fi
 fi

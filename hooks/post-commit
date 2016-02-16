@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# requires: jq, lftp
+#set -xv
 
-set +x
-
-echo "------------------------------------------------POST Commit Hook"
+echo "Git post-commit hook for git-flow."
 
 FILE=composer.json
-
 LOCAL="./"
 EXCLUDES=""
+
+VERBOSE=v
 
 if [ -f $FILE ]; then
 
     TYPE=$(jq -r '.type' $FILE)
     NAME=$(jq -r '.name' $FILE)
+    SLUG=$(basename $NAME)
 
     HOST_URL=$(jq -r '.extra.staging.url' $FILE)
     HOST_TYPE=$(jq -r '.extra.staging.type' $FILE)
@@ -23,18 +23,36 @@ if [ -f $FILE ]; then
     ARCHIVE_EXCLUDES=$(jq -r '.archive.exclude[]' $FILE)
     for e in $ARCHIVE_EXCLUDES
     do
-	echo "exclude: $e"
 	EXCLUDES+=" --exclude $e"
     done
 
     if [ "$TYPE" = "wordpress-theme" ]; then
+
+	echo "Git post-commit hook - Ensure we got directory for local theme development."
+
+	mkdir -p$VERBOSE ./wp-content/themes/$SLUG
+
+	echo "Git post-commit hook - Sync theme content to ./wp-content/themes/$SLUG"
+
+	rsync -az$VERBOSE $EXCLUDES $LOCAL ./wp-content/themes/$SLUG
+
+	echo "Git post-commit hook - Run Composer to fetch runtime dependencies"
+
+	composer update --no-dev \
+		 --no-plugins \
+		 --no-scripts \
+		 --optimize-autoloader \
+		 --working-dir=./wp-content/themes/$SLUG
+
+	echo "Git post-commit hook - Sync theme folder to staging host"
 
 	if [ "$HOST_TYPE" = "ftp" ]; then
 
 	    # Set up FTP URL
 	    FTP_URL="$HOST_TYPE://$HOST_USER@$HOST_URL"
 
-	    REMOTE="wp-content/themes/$NAME/"
+	    REMOTE="/wp-content/themes/$SLUG/"
+	    LOCAL="$(pwd)/wp-content/themes/$SLUG/"
 	    # LFTP sets
 	    lftp_sets="set cmd:fail-exit yes;"
 	    if [ "$HOST_TYPE" == "ftp" ]
@@ -42,13 +60,23 @@ if [ -f $FILE ]; then
 		lftp_sets+=" set ftp:ssl-allow no;"
 	    fi
 
-	    lftp -e "debug
-	    $lftp_sets
+	    # ensure we got target dir on FTP host
+
+	    lftp -e "$lftp_sets
+	    open '$FTP_URL';
+	    mkdir -pf $REMOTE;"
+
+	    lftp -e "$lftp_sets
 	    open '$FTP_URL';
 	    lcd $LOCAL;
-	    mkdir -pf $REMOTE;
 	    cd $REMOTE;
-	    mirror --continue --only-newer --verbose=3 --no-perms --parallel=8 $EXCLUDES $LOCAL $REMOTE"
+	    mirror --verbose=0 \
+	    --continue \
+	    --only-newer \
+	    --no-perms \
+	    --parallel=8 \
+	    $EXCLUDES \
+	    --reverse $LOCAL $REMOTE"
 	fi
     fi
 fi

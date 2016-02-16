@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+#set -ex
 
 VERSION_FILE=$(__get_version_file)
 VERSION_PREFIX=$(git config --get gitflow.prefix.versiontag)
@@ -18,19 +18,14 @@ if [ -f composer.json ]; then
 
     TEMPFILE=$(tempfile)
 
-    echo "Composer.json exists. Version bump to $VERSION in $ROOTDIR."
+    echo "POST Flow release finish - omposer.json exists. Version bump to $VERSION in $ROOTDIR."
 
     jq "del(.version) + { \"version\": \"$VERSION\" }" composer.json > $TEMPFILE && mv -f $TEMPFILE composer.json
 
     TYPE=$(jq -r '.type' composer.json)
 
     if [ $TYPE == "wordpress-theme" ]; then
-	echo "WordPress Theme version bump: $VERSION"
-
-	# Ensure we got required dependencies
-	# We need to run composer update here because we may need some scss templates for style.css
-
-#	composer update --no-interaction --quiet
+	echo "POST Flow release finish - WordPress Theme version bump: $VERSION"
 
 	# Ensure we got style.css to bump
 
@@ -39,7 +34,7 @@ if [ -f composer.json ]; then
 	    sed -i 's/^Version:.*/Version: '$VERSION'/' $ROOTDIR/assets/styles/style.scss
 
 	    sass --sourcemap=none \
-		 --load-path="vendor/twbs/bootstrap-sass/assets/stylesheets" \
+		 --load-path="vendor/bower_components/bootstrap-sass/assets/stylesheets" \
 		 --style=compressed \
 		 'assets/styles/style.scss' 'style.css'
 	fi
@@ -52,7 +47,7 @@ if [ -f composer.json ]; then
 
     if [ $TYPE == "wordpress-plugin" ]; then
 
-	echo "WordPress Plugin version bump to: $VERSION"
+	echo "POST Flow release finish - WordPress Plugin version bump to: $VERSION"
 
 	find $ROOTDIR -maxdepth 1 -type f -name '*.php' -exec \
 	     sed -i 's/^Version:.*/Version: '$VERSION'/g' {} +
@@ -68,7 +63,7 @@ if [ -f bower.json ]; then
 
     TEMPFILE=$(tempfile)
 
-    echo "Bower version bump to $VERSION."
+    echo "POST Flow release finish - Bower version bump to $VERSION."
     jq "del(.version) + { \"version\": \"$VERSION\" }" bower.json > $TEMPFILE && mv -f $TEMPFILE bower.json
 fi
 
@@ -76,7 +71,7 @@ if [ -f package.json ]; then
 
     TEMPFILE=$(tempfile)
 
-    echo "Package.json version bump to $VERSION."
+    echo "POST Flow release finish - Package.json version bump to $VERSION."
     jq "del(.version) + { \"version\": \"$VERSION\" }" package.json > $TEMPFILE && mv -f $TEMPFILE package.json
 fi
 

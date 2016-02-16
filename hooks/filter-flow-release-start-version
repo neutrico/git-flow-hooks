@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#set -x
+
 # Runs during git flow release start
 #
 # Positional arguments:
