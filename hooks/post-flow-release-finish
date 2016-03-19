@@ -7,11 +7,19 @@ ROOTDIR=$(git rev-parse --show-toplevel)
 
 echo "POST Flow release finish version: $VERSION $2 $3 $4"
 
+# Emacs project
+CASK=Cask
+if [ -f $CASK ] ; then
+
+    cask package
+    
+fi
+    
 FILE=composer.json
 EXCLUDES=""
 VERBOSE=v
 
-if [ -f $FILE ]; then
+if [ -f $FILE ] ; then
 
     TYPE=$(jq -r '.type' $FILE)
     NAME=$(jq -r '.name' $FILE)
