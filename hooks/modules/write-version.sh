@@ -75,6 +75,19 @@ if [ -f package.json ]; then
     jq "del(.version) + { \"version\": \"$VERSION\" }" package.json > $TEMPFILE && mv -f $TEMPFILE package.json
 fi
 
+
+# Emacs project
+CASK=Cask
+if [ -f $CASK ] ; then
+
+    find $ROOTDIR -maxdepth 1 -type f -name '*.el' -exec \
+	 sed -i 's/^;; Version:.*/;; Version: '$VERSION'/g' {} +
+
+    #regenerate package file
+    cask pkg-file
+    
+fi
+
 if [ $? -ne 0 ]; then
     __print_fail "Unable to write version to $VERSION_FILE."
     return 1

@@ -30,4 +30,13 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Emacs project
+CASK=Cask
+if [ -f $CASK ] ; then
+
+    #regenerate package file
+    cask pkg-file
+    
+fi
+
 exit 0
