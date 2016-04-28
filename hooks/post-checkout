@@ -2,7 +2,7 @@
 
 #set -xv
 
-echo "Git post-checkout hook for git-flow init."
+#echo "Git post-checkout hook for git-flow init."
 
 SCRIPT_PATH="$0"; while [ -h "$SCRIPT_PATH" ]; do SCRIPT_PATH=$(readlink "$SCRIPT_PATH"); done
 . "$(dirname $SCRIPT_PATH)/modules/functions.sh"

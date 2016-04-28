@@ -5,7 +5,7 @@
 VERSION=$1
 ROOTDIR=$(git rev-parse --show-toplevel)
 
-echo "POST Flow release finish version: $VERSION $2 $3 $4"
+# echo "POST Flow release finish version: $VERSION $2 $3 $4"
 
 # Emacs project
 CASK=Cask
@@ -53,7 +53,7 @@ if [ -f $FILE ] ; then
 
 	# Create temporary dir
 
-	echo "POST Flow release finish - Prepare zip archive"
+#	echo "POST Flow release finish - Prepare zip archive"
 
 	TMPDIR=$(mktemp -d)
 	mkdir -p $TMPDIR/$SLUG
